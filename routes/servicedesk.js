@@ -1,8 +1,7 @@
-
 var soap = require('soap'); //Подключаем модуль
-var userSoap = 'monitor'; //Пользак веб сервиса
-var passSoap = 'monitor123QWE'; //Пароль пользака веб сервиса
-var url = 'http://'+userSoap+':'+passSoap+'@1cws.avalon.ru/itilp/ws/MonitoringService?wsdl'; //Урл до всдл с включенной аутентификацией, тут нужны пароли чтобы получить саму всдл
+var userSoap = ''; //Пользак веб сервиса
+var passSoap = ''; //Пароль пользака веб сервиса
+var url = 'http://'+userSoap+':'+passSoap+'@url/service?wsdl'; //Урл до всдл с включенной аутентификацией, тут нужны пароли чтобы получить саму всдл
 
 exports.newTasks = function(callback) {
 
