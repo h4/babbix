@@ -1,58 +1,35 @@
 
-var Connection = require('tedious').Connection,
-    Request = require('tedious').Request,
-    config = require('../config.json');
-
-function getData(query, callback) {
-    var connection = new Connection(config.servicedesk),
-        result = [];
-
-    function executeStatement() {
-        var request = new Request(query, function (err, rowCount) {
-            if (err) {
-                console.log(err);
-            } else {
-                result.forEach(function(elem, id, arr) {
-                    arr[id] = {};
-                    elem.forEach(function(elem) {
-                        arr[id][elem.metadata.colName] = elem.value;
-                    });
-                });
-                callback(result);
-                connection.close();
-            }
-        });
-
-        request.on('row', function (columns) {
-            result.push(columns);
-        });
-
-        connection.execSql(request);
-    }
-
-    connection.on('connect', function (err) {
-            if(err) {
-                console.log('Connection error: ' + err);
-            } else {
-                executeStatement();
-            }
-        }
-    );
-
-
-    connection.on('errorMessage', function (err) {
-        console.log('Connection error: ' + err);
-    });
-}
+var soap = require('soap'); //Подключаем модуль
+var userSoap = 'monitor'; //Пользак веб сервиса
+var passSoap = 'monitor123QWE'; //Пароль пользака веб сервиса
+var url = 'http://'+userSoap+':'+passSoap+'@1cws.avalon.ru/itilp/ws/MonitoringService?wsdl'; //Урл до всдл с включенной аутентификацией, тут нужны пароли чтобы получить саму всдл
 
 exports.newTasks = function(callback) {
-    getData("EXEC Incidents_SelectLast @Last=11", callback);
+
+    soap.createClient(url, function(err, client) { //Создаем клиента модуля
+        client.setSecurity(new soap.BasicAuthSecurity(userSoap, passSoap)); //Говорим методам что они работают с сервисом которому нужна аутентификация
+        client.MonitoringService.MonitoringServiceSoap.NewTasks({}, function(err, result) { //Вызываем метод Сервис.Порт.Метод(Аргументы, шняга)
+            if (err) { console.log(err)} else {callback(result.return.Tasks);}
+        });
+    });
 };
 
 exports.overdueTasks = function(callback) {
-    getData("EXEC Incidents_SelectOverdue", callback);
+
+    soap.createClient(url, function(err, client) { //Создаем клиента модуля
+        client.setSecurity(new soap.BasicAuthSecurity(userSoap, passSoap)); //Говорим методам что они работают с сервисом которому нужна аутентификация
+        client.MonitoringService.MonitoringServiceSoap.OverdueTasks({}, function(err, result) { //Вызываем метод Сервис.Порт.Метод(Аргументы, шняга)
+            if (err) { console.log(err)} else {callback(result.return.Tasks);}
+        });
+    });
 };
 
 exports.taskCounter = function(callback) {
-    getData("IncidentsStatusSummaries_SelectAll", callback);
+
+    soap.createClient(url, function(err, client) { //Создаем клиента модуля
+        client.setSecurity(new soap.BasicAuthSecurity(userSoap, passSoap)); //Говорим методам что они работают с сервисом которому нужна аутентификация
+        client.MonitoringService.MonitoringServiceSoap.TaskCounter({}, function(err, result) { //Вызываем метод Сервис.Порт.Метод(Аргументы, шняга)
+            if (err) { console.log(err)} else {callback(result.return.Counters);}
+        });
+    });
 }
